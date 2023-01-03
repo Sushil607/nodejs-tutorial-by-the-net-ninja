@@ -2,14 +2,13 @@
 const express = require("express");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
-const Blog = require("./models/Blog");
+const blogRoutes = require("./routes/blogRoutes");
 require("dotenv").config();
 
 // set up express app
 const app = express();
 
 // connect to mongoDB
-
 mongoose.set("strictQuery", false);
 mongoose
   .connect(process.env.dbURI, {
@@ -94,56 +93,7 @@ app.get("/about", (req, res) => {
 });
 
 // blog routes
-
-app.get("/blogs", (req, res) => {
-  Blog.find()
-    .sort({ createdAt: -1 })
-    .then((result) => {
-      res.render("index", { title: "All Blogs", blogs: result });
-    })
-    .catch((err) => console.log(err));
-});
-
-app.post("/blogs", (req, res) => {
-  // create new instance of the blog
-  const blog = new Blog(req.body);
-  // save the blog document in the database
-  blog
-    .save()
-    .then((result) => {
-      // redirecting to all blogs
-      console.log(result);
-      res.redirect("/blogs");
-    })
-    .catch((err) => console.log(err));
-});
-
-app.get("/blogs/create", (req, res) => {
-  res.render("create", { title: "Create a new blog" });
-});
-
-app.get("/blogs/:id", (req, res) => {
-  // getting the id
-  const id = req.params.id;
-  // finding the correct blog
-  Blog.findById(id)
-    .then((result) => {
-      res.render("details", { title: "Blog Details", blog: result });
-    })
-    .catch((err) => console.log(err));
-});
-
-app.delete("/blogs/:id", (req, res) => {
-  // getting the id
-  const id = req.params.id;
-  // deleting the blog
-  Blog.findByIdAndDelete(id)
-    .then((result) => {
-      // sending redirect to frontend
-      res.json({ redirect: "/blogs" });
-    })
-    .catch((err) => console.log(err));
-});
+app.use("/blogs", blogRoutes);
 
 // redirects
 // app.get("/about-us", (req, res) => {
